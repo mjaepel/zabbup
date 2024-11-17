@@ -1,0 +1,55 @@
+general:
+  loglevel: debug
+  dryrun: false
+  max_threads: 10
+  encryption: false
+  encryption_key: my_cool_password
+
+zabbix:
+  url: https://localhost/zabbix
+  auth:
+    token: my_token
+  export_format: yaml
+
+inputs:
+  templates:
+    enable: true
+    excludes:
+      - ".*dont_backup*"
+
+  templategroups:
+    enable: true
+    excludes:
+      - ".*dont_backup*"
+
+  hosts:
+    enable: true
+    encryption: true
+    excludes:
+      - ".*dont_backup*"
+
+  hostgroups:
+    enable: true
+    excludes:
+      - ".*dont_backup*"
+
+  maps:
+    enable: true
+    encryption: true
+    excludes:
+      - ".*dont_backup*"
+
+  images:
+    enable: true
+    excludes:
+      - ".*dont_backup*"
+
+  mediatypes:
+    enable: true
+    excludes:
+      - ".*dont_backup*"
+
+outputs:
+  git:
+    enable: true
+    repo: git@my.git.domain.tld:repos/backup.git
