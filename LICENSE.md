@@ -12,9 +12,9 @@ This software is released under a dual-license model. You may choose between the
 
 2. **Commercial License** (for companies and organizations):
    - If you are a **company**, **organization**, or any **entity** that intends to use this software for **commercial purposes**, you must obtain a **separate commercial license**.
-   - Please contact @mjaepel to discuss licensing terms and pricing for commercial use.
+   - Please contact [@mjaepel](https://github.com/mjaepel) to discuss licensing terms and pricing for commercial use.
    - Commercial use includes, but is not limited to, using the software in commercial products, services, or for internal purposes that generate revenue.
 
 By using this software, you agree to the terms outlined in either the Non-Commercial License or Commercial License, depending on your use case.
 
-If you are unsure whether your usage qualifies as commercial, or if you are interested in acquiring a commercial license, please contact @mjaepel for clarification.
+If you are unsure whether your usage qualifies as commercial, or if you are interested in acquiring a commercial license, please contact [@mjaepel](https://github.com/mjaepel) for clarification.
