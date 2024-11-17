@@ -1,0 +1,5 @@
+zabbix_utils >= 2.0.1
+pyyaml >= 6.0.2
+pydantic >= 2.9.2
+GitPython >=3.1.43
+cryptography >=43.0.3
