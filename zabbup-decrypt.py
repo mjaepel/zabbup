@@ -1,11 +1,14 @@
 #!/bin/env python3
+import sys
+from pathlib import Path
+
+from pydantic import ValidationError
+
 from modules.config import config
 from modules.crypto import decrypt
-from pydantic import ValidationError
-import sys
 
 
-def main():
+def main() -> None:
     config.add_argument("-f", "--file", help="Input file to decrypt", required=True)
     try:
         config.load_data()
@@ -21,7 +24,7 @@ def main():
         sys.exit(1)
 
     try:
-        with open(config.args.file, 'rb') as f:
+        with Path.open(config.args.file, "rb") as f:
             data = f.read()
         print(decrypt(data, config.general.encryption_key))
     except Exception as e:

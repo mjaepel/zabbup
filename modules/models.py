@@ -1,5 +1,7 @@
 from pydantic import BaseModel, field_validator
 
+from modules.exceptions import NotAllowedValueError
+
 
 class ExportObject(BaseModel):
     type: str
@@ -9,7 +11,7 @@ class ExportObject(BaseModel):
     data: str
 
     @field_validator("type")
-    def check_type(cls, value):
+    def check_type(cls, value: str) -> str:
         allowed_formats = [
             "templates",
             "templategroups",
@@ -20,7 +22,7 @@ class ExportObject(BaseModel):
             "mediatypes",
         ]
         if value not in allowed_formats:
-            raise ValueError(f"Allowed values are: {', '.join(allowed_formats)}.")
+            raise NotAllowedValueError(value, allowed_formats)
         return value
 
 

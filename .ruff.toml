@@ -1,0 +1,30 @@
+line-length = 140
+indent-width = 4
+
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "B", "Q", "W", "I", "N", "UP", "ANN", "S", "FBT", "A", "COM", "C4", "DTZ", "EXE", "FA", "ICN", "LOG", "G", "INP", "PIE", "PYI", "PT", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "INT", "ARG", "PTH", "TD", "ERA", "PL", "TRY", "PERF", "RUF"]
+ignore = [
+    "G004",    # fallback to string formatting syntax while every where f-strings are used, doesn't make sense.
+    "TRY400",  # wtf? we use try-except for NOT printing the full trace ... this would be idiotic to use logging.exception() there :D
+    "ANN101",  # already removed from newer ruff versions
+    "PERF401", # dont agree with "more readable". Performance difference is negligible
+    "RET506",  # Waiting for https://github.com/astral-sh/ruff/discussions/12468
+    "COM812"   # disabling suggested by ruff formater.
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[lint.pylint]
+allow-magic-value-types = ["str", "bytes", "float", "int"]
+
+[lint.pep8-naming]
+classmethod-decorators = ["field_validator", "model_validator"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"

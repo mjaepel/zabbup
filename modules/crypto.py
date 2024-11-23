@@ -1,13 +1,13 @@
-from cryptography.fernet import Fernet
-import hashlib
 import base64
+import hashlib
+
+from cryptography.fernet import Fernet
 
 
 def convert_key(key: str) -> bytes:
     input_bytes = key.encode()
     sha256_hash = hashlib.sha256(input_bytes).digest()
-    fernet_key = base64.urlsafe_b64encode(sha256_hash)
-    return fernet_key
+    return base64.urlsafe_b64encode(sha256_hash)
 
 
 def encrypt(content: str, key: str) -> bytes:

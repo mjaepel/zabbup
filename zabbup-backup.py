@@ -1,15 +1,17 @@
 #!/bin/env python3
-from modules.models import ExportObjectList
-from modules.logger import GetLogger
-import modules.inputs.zapi_configuration_export
-from modules.config import config
-import modules.outputs.git
-from pydantic import ValidationError
-import zabbix_utils
 import sys
 
+import zabbix_utils
+from pydantic import ValidationError
 
-def main():
+import modules.inputs.zapi_configuration_export
+import modules.outputs.git
+from modules.config import config
+from modules.logger import get_logger
+from modules.models import ExportObjectList
+
+
+def main() -> None:
     try:
         config.load_data()
     except FileNotFoundError:
@@ -22,8 +24,11 @@ def main():
             print(".".join(error["loc"]))
             print(f"    {error['msg']}")
         sys.exit(1)
+    except Exception as e:
+        print(f"Error on processing configuration file: {e}")
+        sys.exit(1)
 
-    logger = GetLogger()
+    logger = get_logger()
     try:
         zapi = zabbix_utils.ZabbixAPI(url=config.zabbix.url, **config.zabbix.auth.model_dump())
         logger.debug(f"Connected to Zabbix instance with version {zapi.api_version()}")
@@ -39,7 +44,7 @@ def main():
         logger.warning(f"Zabbix version < 5.4 detected. Forcing zabbix.export_format to {config.zabbix.export_format}")
 
     try:
-        export_data: ExportObjectList = modules.inputs.zapi_configuration_export.ZConfigExport()
+        export_data: ExportObjectList = modules.inputs.zapi_configuration_export.zconfig_export()
     except zabbix_utils.exceptions.APIRequestError as e:
         logger.error(f"ZBX API: {e}")
         sys.exit(1)
@@ -48,7 +53,7 @@ def main():
         sys.exit(1)
 
     try:
-        modules.outputs.git.Git(export_data)
+        modules.outputs.git.export_git(export_data)
     except AttributeError:
         raise
     except Exception as e:

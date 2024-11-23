@@ -1,14 +1,14 @@
-from modules.models import ExportObjectList
-from modules.config import config
-from modules.logger import GetLogger
-from modules.helpers import sanitize_string
-from modules.models import ExportObject
-from typing import List, Dict
 import concurrent.futures
-import zabbix_utils
 import re
 
-_AVAIL_EXPORT_TYPES: Dict = {
+import zabbix_utils
+
+from modules.config import config
+from modules.helpers import sanitize_string
+from modules.logger import get_logger
+from modules.models import ExportObject, ExportObjectList
+
+_AVAIL_EXPORT_TYPES: dict = {
     "images": {
         "api_method_name": "image",
         "api_id_field": "imageid",
@@ -47,36 +47,36 @@ _AVAIL_EXPORT_TYPES: Dict = {
 }
 
 
-def ZConfigGetDataWorker(
+def zconfig_get_data_worker(
     export_type_name: str,
-    export_type_data: Dict,
-    element: Dict,
-    element_counter: str
+    export_type_data: dict,
+    element: dict,
+    element_counter: str,
 ) -> ExportObject:
-    logger = GetLogger()
+    logger = get_logger()
     logger.debug(f"Exporting {export_type_name} {element_counter}: {element['name']} ({element[export_type_data['api_id_field']]})")
 
     zapi = zabbix_utils.ZabbixAPI(url=config.zabbix.url, **config.zabbix.auth.model_dump())
     data = zapi.configuration.export(
-        options = {
+        options={
             export_type_data["api_export_field"]: [
-                element[export_type_data["api_id_field"]]
-            ]
+                element[export_type_data["api_id_field"]],
+            ],
         },
-        prettyprint = True,
-        format = config.zabbix.export_format,
+        prettyprint=True,
+        format=config.zabbix.export_format,
     )
 
     return ExportObject(
-        type = export_type_name,
-        id = element[export_type_data["api_id_field"]],
-        name = element["name"],
-        name_sanitized = sanitize_string(element["name"]),
-        data = data,
+        type=export_type_name,
+        id=element[export_type_data["api_id_field"]],
+        name=element["name"],
+        name_sanitized=sanitize_string(element["name"]),
+        data=data,
     )
 
 
-def ZConfigGetData(export_type_name: str, export_type_data: dict) -> ExportObjectList:
+def zconfig_get_data(export_type_name: str, export_type_data: dict) -> ExportObjectList:
     data: ExportObjectList = []
 
     zapi = zabbix_utils.ZabbixAPI(url=config.zabbix.url, **config.zabbix.auth.model_dump())
@@ -86,32 +86,29 @@ def ZConfigGetData(export_type_name: str, export_type_data: dict) -> ExportObjec
 
     elements = api_action_obj(
         output=[export_type_data["api_id_field"], "name"],
-        limit=2
+        limit=2,
     )
 
-    elements_filtered: List = []
+    elements_filtered: list = []
     for element in elements:
-        if not any(
-            re.search(pattern, element["name"])
-            for pattern in config.inputs.model_dump()[export_type_name]["excludes"]
-        ):
+        if not any(re.search(pattern, element["name"]) for pattern in config.inputs.model_dump()[export_type_name]["excludes"]):
             elements_filtered.append(element)
 
     element_counter: int = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=config.general.max_threads) as pool:
-        pool_jobs: List = []
+        pool_jobs: list = []
         for element in elements_filtered:
             element_counter += 1
             element_counter_str: str = f"{element_counter}/{len(elements_filtered)}"
 
             pool_jobs.append(
                 pool.submit(
-                    ZConfigGetDataWorker,
-                    export_type_name = export_type_name,
-                    export_type_data = export_type_data,
-                    element = element,
-                    element_counter = element_counter_str,
-                )
+                    zconfig_get_data_worker,
+                    export_type_name=export_type_name,
+                    export_type_data=export_type_data,
+                    element=element,
+                    element_counter=element_counter_str,
+                ),
             )
 
         for job in concurrent.futures.as_completed(pool_jobs):
@@ -120,14 +117,14 @@ def ZConfigGetData(export_type_name: str, export_type_data: dict) -> ExportObjec
     return data
 
 
-def ZConfigExport() -> ExportObjectList:
+def zconfig_export() -> ExportObjectList:
     data: ExportObjectList = []
 
     for export_type_name, export_type_data in _AVAIL_EXPORT_TYPES.items():
         if config.inputs.model_dump()[export_type_name]["enable"]:
-            data = data + ZConfigGetData(export_type_name, export_type_data)
+            data = data + zconfig_get_data(export_type_name, export_type_data)
 
     return data
 
 
-__all__ = ["ZConfigExport"]
+__all__ = ["zconfig_export"]
