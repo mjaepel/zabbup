@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, model_validator, field_validator
 from typing import List, Optional
+from argparse import ArgumentParser
 import logging
 import yaml
 import pathlib
@@ -146,11 +147,31 @@ class Configuration(BaseModel):
 
 ###################################################################
 
+class ConfigParser():
+    def __init__(self):
+        self.config_file = pathlib.Path(__file__).parent.parent / "config.yaml"
+        self.argsparser = ArgumentParser()
+        self.argsparser.add_argument("-c", "--config", default=self.config_file, help=f"Configuration file (default: {self.config_file})", required=False)
 
-def load_config(config_file: str) -> dict:
-    with open(config_file, "r") as file:
-        return yaml.safe_load(file)
+    def load_data(self):
+        self.args = self.argsparser.parse_args()
+        self.config_file = self.args.config
+        with open(self.config_file, "r") as file:
+            config_dict = yaml.safe_load(file)
+        config_data = Configuration.model_validate(config_dict)
 
-config_file = pathlib.Path(__file__).parent.parent / "config.yaml"
-config_dict = load_config(config_file)
-config = Configuration.model_validate(config_dict)
+        return config_data
+
+    def __getattr__(self, name: str):
+        config_data = self.load_data()
+        if hasattr(config_data, name):
+            return getattr(config_data, name)
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def __repr__(self):
+        return str(self.load_data().model_dump())
+
+    def add_argument(self, *args, **kwargs):
+        self.argsparser.add_argument(*args, **kwargs)
+
+config = ConfigParser()

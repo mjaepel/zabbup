@@ -14,9 +14,6 @@
   * Encryption
 
 * Roadmap
-  * CLI arguments for
-    * zabbup-backup
-    * zabbup-decrypt
   * Documentation :D
   * Additional metadata for each export file to check if encrypted data changed
   * Export to S3
