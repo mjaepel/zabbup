@@ -40,7 +40,9 @@ def Git(data: ExportObjectList):
                 repo.git.add(".", "--sparse")
                 repo_changes = repo.git.status("--porcelain")
                 if repo_changes:
-                    logger.debug(f"Changes to commit: {repo_changes}")
+                    logger.debug("Changes to commit:")
+                    for change in repo_changes.split("\n"):
+                        logger.debug(f"    {change}")
                     repo.git.commit("-m", "Exported data")
                     repo.git.push()
     else:
