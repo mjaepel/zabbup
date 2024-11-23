@@ -82,7 +82,7 @@ def ZConfigGetData(export_type_name: str, export_type_data: dict) -> ExportObjec
     zapi = zabbix_utils.ZabbixAPI(url=config.zabbix.url, **config.zabbix.auth.model_dump())
 
     api_method_obj = getattr(zapi, export_type_data["api_method_name"])
-    api_action_obj = getattr(api_method_obj, "get")
+    api_action_obj = api_method_obj.get
 
     elements = api_action_obj(
         output=[export_type_data["api_id_field"], "name"],

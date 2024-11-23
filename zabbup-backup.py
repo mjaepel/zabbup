@@ -12,7 +12,7 @@ import sys
 def main():
     try:
         config.load_data()
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         print(f"Configuration file not found: {config.config_file}")
         sys.exit(1)
     except ValidationError as e:
