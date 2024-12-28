@@ -4,3 +4,4 @@ pydantic >= 2.9.2
 GitPython >= 3.1.43
 cryptography >= 43.0.3
 argparse >= 1.4.0
+minio >= 7.2.12

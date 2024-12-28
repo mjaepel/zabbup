@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 import modules.inputs.zapi_configuration_export
 import modules.outputs.git
+import modules.outputs.s3
 from modules.config import config
 from modules.logger import get_logger
 from modules.models import ExportObjectList
@@ -59,6 +60,8 @@ def main() -> None:
     except Exception as e:
         logger.error(f"Output - Git: {e}")
         sys.exit(1)
+
+    modules.outputs.s3.export_s3(export_data)
 
 
 if __name__ == "__main__":
