@@ -16,7 +16,7 @@ def export_git(data: ExportObjectList) -> None:
         if config.general.dryrun:
             logger.info("Dryrun enabled, skipping git export")
         else:
-            logger.info("Exporting to git")
+            logger.info("Writing to git")
             with tempfile.TemporaryDirectory() as tmpdirname:
                 repo = git.Repo.clone_from(
                     config.outputs.git.repo,
@@ -28,16 +28,22 @@ def export_git(data: ExportObjectList) -> None:
 
                 for exportdata in data:
                     export_dir = Path(tmpdirname) / Path(exportdata.type)
-                    export_filename = Path(export_dir) / Path(
-                        f"{exportdata.name_sanitized}_{exportdata.id}.{config.zabbix.export_format}",
-                    )
+                    export_filename = Path(f"{exportdata.name_sanitized}_{exportdata.id}.{config.zabbix.export_format}")
+                    export_path = export_dir / export_filename
 
                     Path.mkdir(export_dir, exist_ok=True)
-                    if config.general.encryption or config.inputs.model_dump()[exportdata.type]["encryption"]:
-                        with Path.open(export_filename, "wb") as export_file:
-                            export_file.write(encrypt(exportdata.data, config.general.encryption_key))
+
+                    if config.inputs.model_dump()[exportdata.type]["encryption"]:
+                        with Path.open(export_path, "wb") as export_file:
+                            export_file.write(
+                                encrypt(
+                                    content=exportdata.data,
+                                    key=config.general.encryption_key,
+                                    deterministic=config.inputs.model_dump()[exportdata.type]["encryption_deterministic"]
+                                )
+                            )
                     else:
-                        with Path.open(export_filename, "w") as export_file:
+                        with Path.open(export_path, "w") as export_file:
                             export_file.write(exportdata.data)
 
                 repo.git.add(".", "--sparse")
@@ -49,4 +55,4 @@ def export_git(data: ExportObjectList) -> None:
                     repo.git.commit("-m", "Exported data")
                     repo.git.push()
     else:
-        logger.debug("Git export disabled")
+        logger.debug("Git output disabled")

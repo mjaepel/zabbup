@@ -4,6 +4,7 @@ general:
   max_threads: 10
   encryption: false
   encryption_key: my_cool_password
+  encryption_deterministic: false
 
 zabbix:
   url: https://localhost/zabbix
@@ -25,6 +26,7 @@ inputs:
   hosts:
     enable: true
     encryption: true
+    encryption_deterministic: false
     excludes:
       - ".*dont_backup*"
 
@@ -36,6 +38,7 @@ inputs:
   maps:
     enable: true
     encryption: true
+    encryption_deterministic: false
     excludes:
       - ".*dont_backup*"
 

@@ -25,12 +25,13 @@ loglevel_map = {
 
 
 class GeneralConfig(BaseModel):
-    loglevel: str | None = "INFO"
-    loglevel_numeric: int | None = logging.INFO
-    dryrun: bool | None = False
+    loglevel: str = "INFO"
+    loglevel_numeric: int = logging.INFO
+    dryrun: bool = False
     max_threads: int | None = 10
-    encryption: bool | None = False
+    encryption: bool = False
     encryption_key: str | None
+    encryption_deterministic: bool = False
 
     @model_validator(mode="before")
     def convert_loglevel(cls, values: dict) -> dict:
@@ -77,43 +78,50 @@ class ZabbixConfig(BaseModel):
 
 class TemplatesConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
 class TemplategroupsConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
 class HostsConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
 class HostgroupsConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
 class MapsConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
 class ImagesConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
 class MediatypesConfig(BaseModel):
     enable: bool
-    encryption: bool | None = False
+    encryption: bool | None = None
+    encryption_deterministic: bool | None = None
     excludes: list[str] | None = []
 
 
@@ -126,14 +134,40 @@ class InputsConfig(BaseModel):
     images: ImagesConfig
     mediatypes: MediatypesConfig
 
+    def set_attribute(self, key: str, value: dict) -> None:
+        for attr in self.__dict__:
+            if key in self.__dict__[attr].__dict__ and self.__dict__[attr].__dict__[key] is None:
+                self.__dict__[attr].__dict__[key] = value
 
 class GitConfig(BaseModel):
     enable: bool
     repo: str
 
 
+class S3LifecycleConfig(BaseModel):
+    enable: bool
+    days: int
+
+
+class S3RetentionConfig(BaseModel):
+    enable: bool
+    days: int
+
+
+class S3Config(BaseModel):
+    enable: bool
+    url: str
+    access_key: str
+    secret_key: str
+    bucket: str
+    bucket_path: str | None = "."
+    lifecycle: S3LifecycleConfig
+    retention: S3RetentionConfig
+
+
 class OutputsConfig(BaseModel):
     git: GitConfig
+    s3: S3Config
 
 
 class Configuration(BaseModel):
@@ -168,6 +202,9 @@ class ConfigParser:
 
         config_data = Configuration.model_validate(config_dict)
         set_log_level(config_data.general.loglevel_numeric)
+
+        config_data.inputs.set_attribute("encryption", config_data.general.encryption)
+        config_data.inputs.set_attribute("encryption_deterministic", config_data.general.encryption_deterministic)
 
         return config_data
 
